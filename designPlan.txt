@@ -1,0 +1,25 @@
+
+Database: what do I want it to be able to do
+ - store information in a key-value format
+ - can insert, delete, update, get 
+ - store it in memory 
+ - be able to start it in local host and connect it to an actual application on the same machine. Using a TCP server
+ - values are only String
+ - keys are set by the user as strings
+ - return values as strings
+
+ - <command> <key <value>
+ insert  - insert key value
+            returns 1 if successful, 0 if not
+ get     - get key
+            returns value
+ update  - update key
+            returns key: value updated
+ delete  - delete key
+            returns key: value deleted
+
+1. need to make a working TCP server
+2. set up server to handle different information sent to it
+3. handle data in a Map 
+
+Connections: telnet localhost 3333
