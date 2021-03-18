@@ -9,13 +9,13 @@ Database: what do I want it to be able to do
  - return values as strings
 
  - <command> <key <value>
- insert  - insert key value
+ SET  - insert key value
             returns 1 if successful, 0 if not
- get     - get key
+ GET     - get key
             returns value
- update  - update key
+ UPDATE  - update key
             returns key: value updated
- delete  - delete key
+ DELETE  - delete key
             returns key: value deleted
 
 1. need to make a working TCP server
@@ -23,3 +23,11 @@ Database: what do I want it to be able to do
 3. handle data in a Map 
 
 Connections: telnet localhost 3333
+
+ - Keys cannot have spaces in them
+ - Value's can have spaces in them
+example inputs
+GET 01 - return "Aden"
+GET user1 - return "Aden Eilers"
+
+Set user1 Aden

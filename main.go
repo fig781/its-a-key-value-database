@@ -20,12 +20,14 @@ type Command struct {
 	value string
 }
 
-func main() {
+var dataStore = make(map[string]string)
 
+func main() {
 	//Listen for connections
 	dStream, err := net.Listen(connType, connHost+":"+connPort)
 	if err != nil {
 		fmt.Println(err)
+		//TODO send error information back to client
 		return
 	}
 	fmt.Println("Database server running on " + connHost + ":" + connPort)
@@ -34,8 +36,10 @@ func main() {
 	//Accepts connection requests
 	for {
 		conn, err := dStream.Accept()
+		fmt.Println("User connected")
 		if err != nil {
 			fmt.Println(err)
+			//TODO send error information back to client
 			return
 		}
 
@@ -45,21 +49,23 @@ func main() {
 
 //Handles data that streams in from TCP server connection
 func handleConnection(conn net.Conn) {
-	fmt.Println("Ran")
 	for {
 		data, err := bufio.NewReader(conn).ReadString('\n')
 		if err != nil {
 			fmt.Println(err)
+			//TODO send error information back to client
 			return
 		}
 
 		parsedCommand, err := parseCommand(data)
 		if err != nil {
 			fmt.Println(err)
+			//TODO send error information back to client
 		}
-		fmt.Print(parsedCommand)
+		fmt.Printf("verb: %s, key: %s, value: %s\n",parsedCommand.verb, parsedCommand.key, parsedCommand.value)
+
 		handleCommand(parsedCommand)
-		// function to check if it is a valid commend, if it is valid then execute the action
+		fmt.Println(dataStore)
 
 	}
 	//conn.Close()
@@ -67,18 +73,25 @@ func handleConnection(conn net.Conn) {
 
 func parseCommand(rawData string) (Command, error) {
 	parsedData := strings.Split(rawData, " ")
-	fmt.Printf("len=%d %v\n", len(parsedData), parsedData)
 
 	if len(parsedData) == 2 {
 		return Command{
 			verb: parsedData[0],
 			key:  parsedData[1],
+			value: "",
 		}, nil
-	} else if len(parsedData) == 3 {
+	} else if len(parsedData) > 2 {
+
+		tmpSlice := []string{}
+		for x := 2; x < len(parsedData); x++ {
+			tmpSlice = append(tmpSlice, parsedData[x])
+		}
+		tmpStr := strings.Join(tmpSlice, " ")
+
 		return Command{
 			verb:  parsedData[0],
 			key:   parsedData[1],
-			value: parsedData[2],
+			value: tmpStr,
 		}, nil
 	} else {
 		return Command{}, errors.New("invalid command format")
@@ -92,23 +105,28 @@ func handleCommand(cmd Command) error {
 	switch verb {
 	case "GET":
 		getCommand()
+		return nil
 	case "SET":
-		setCommand()
+		setCommand(cmd)
+		return nil
 	case "DELETE":
 		deleteCommand()
+		return nil
 	case "UPDATE":
 		updateCommand()
+		return nil
 	default:
 		return errors.New("invalid command, use GET, SET, UPDATE or DELETE")
 	}
 }
 
 func getCommand() {
-
+	
 }
 
-func setCommand() {
-
+func setCommand(cmd Command) {
+	dataStore[cmd.key] = cmd.value
+	
 }
 
 func deleteCommand() {
