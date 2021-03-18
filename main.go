@@ -23,7 +23,7 @@ type Command struct {
 func main() {
 
 	//Listen for connections
-	dStream, err := net.Listen(connType, connHost + ":" + connPort)
+	dStream, err := net.Listen(connType, connHost+":"+connPort)
 	if err != nil {
 		fmt.Println(err)
 		return
@@ -54,10 +54,12 @@ func handleConnection(conn net.Conn) {
 		}
 
 		parsedCommand, err := parseCommand(data)
-		if err != nil{
+		if err != nil {
 			fmt.Println(err)
 		}
 		fmt.Print(parsedCommand)
+		handleCommand(parsedCommand)
+		// function to check if it is a valid commend, if it is valid then execute the action
 
 	}
 	//conn.Close()
@@ -68,19 +70,53 @@ func parseCommand(rawData string) (Command, error) {
 	fmt.Printf("len=%d %v\n", len(parsedData), parsedData)
 
 	if len(parsedData) == 2 {
-		return Command {
+		return Command{
 			verb: parsedData[0],
-			key: parsedData[1],
+			key:  parsedData[1],
 		}, nil
 	} else if len(parsedData) == 3 {
-		return Command {
-			verb: parsedData[0],
-			key: parsedData[1],
+		return Command{
+			verb:  parsedData[0],
+			key:   parsedData[1],
 			value: parsedData[2],
 		}, nil
 	} else {
 		return Command{}, errors.New("invalid command format")
 	}
+}
+
+func handleCommand(cmd Command) error {
+	//GET, SET, DELETE, UPDATE
+	verb := strings.ToUpper(cmd.verb)
+
+	switch verb {
+	case "GET":
+		getCommand()
+	case "SET":
+		setCommand()
+	case "DELETE":
+		deleteCommand()
+	case "UPDATE":
+		updateCommand()
+	default:
+		return errors.New("invalid command, use GET, SET, UPDATE or DELETE")
+	}
+}
+
+func getCommand() {
+
+}
+
+func setCommand() {
+
+}
+
+func deleteCommand() {
+
+}
+
+func updateCommand() {
+
 }
 
 //Need to parse the string input to understand what to do
