@@ -62,9 +62,13 @@ func handleConnection(conn net.Conn) {
 			fmt.Println(err)
 			//TODO send error information back to client
 		}
-		fmt.Printf("verb: %s, key: %s, value: %s\n",parsedCommand.verb, parsedCommand.key, parsedCommand.value)
+		fmt.Printf("verb: %s, key: %s, value: %s\n", parsedCommand.verb, parsedCommand.key, parsedCommand.value)
 
-		handleCommand(parsedCommand)
+		err = handleCommand(parsedCommand)
+		if err != nil {
+			fmt.Println(err)
+			//TODO send error information to the client
+		}
 		fmt.Println(dataStore)
 
 	}
@@ -76,8 +80,8 @@ func parseCommand(rawData string) (Command, error) {
 
 	if len(parsedData) == 2 {
 		return Command{
-			verb: parsedData[0],
-			key:  parsedData[1],
+			verb:  parsedData[0],
+			key:   parsedData[1],
 			value: "",
 		}, nil
 	} else if len(parsedData) > 2 {
@@ -98,42 +102,39 @@ func parseCommand(rawData string) (Command, error) {
 	}
 }
 
-func handleCommand(cmd Command) error {
+func handleCommand(cmd Command) (string error) {
 	//GET, SET, DELETE, UPDATE
 	verb := strings.ToUpper(cmd.verb)
 
 	switch verb {
 	case "GET":
-		getCommand()
-		return nil
+		getCommand(cmd)
+
 	case "SET":
 		setCommand(cmd)
 		return nil
 	case "DELETE":
 		deleteCommand()
 		return nil
-	case "UPDATE":
-		updateCommand()
-		return nil
 	default:
-		return errors.New("invalid command, use GET, SET, UPDATE or DELETE")
+		return errors.New("invalid command, use GET, SET or DELETE")
 	}
 }
 
-func getCommand() {
-	
+func getCommand(cmd Command) (string error) {
+	val, exists := dataStore[cmd.key]
+	if exists {
+		return val, errors.New("key does not exist in database")
+	}
+	return val, nil
 }
 
-func setCommand(cmd Command) {
+func setCommand(cmd Command) error {
 	dataStore[cmd.key] = cmd.value
-	
+	return nil
 }
 
 func deleteCommand() {
-
-}
-
-func updateCommand() {
 
 }
 
