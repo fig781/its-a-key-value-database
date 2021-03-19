@@ -57,19 +57,22 @@ func handleConnection(conn net.Conn) {
 			return
 		}
 
+		
 		parsedCommand, err := parseCommand(data)
 		if err != nil {
 			fmt.Println(err)
 			//TODO send error information back to client
 		}
 		fmt.Printf("verb: %s, key: %s, value: %s\n", parsedCommand.verb, parsedCommand.key, parsedCommand.value)
+		//Every input past this should be valid, if an input is not valid it should throw an error.
 
-		err = handleCommand(parsedCommand)
+		value, err := handleCommand(parsedCommand)
 		if err != nil {
 			fmt.Println(err)
 			//TODO send error information to the client
 		}
-		fmt.Println(dataStore)
+		fmt.Println("Value:", value)
+		fmt.Println("Datastore:", dataStore)
 
 	}
 	//conn.Close()
@@ -102,41 +105,49 @@ func parseCommand(rawData string) (Command, error) {
 	}
 }
 
-func handleCommand(cmd Command) (string error) {
-	//GET, SET, DELETE, UPDATE
+func handleCommand(cmd Command) (value string, err error) {
+	value = ""
+	err = nil
 	verb := strings.ToUpper(cmd.verb)
 
 	switch verb {
 	case "GET":
-		getCommand(cmd)
-
+		value, err = getCommand(cmd)
 	case "SET":
-		setCommand(cmd)
-		return nil
+		value, err = setCommand(cmd)
+	case "UPDATE":
+		value, err = updateCommand(cmd)
 	case "DELETE":
-		deleteCommand()
-		return nil
+		value, err = deleteCommand(cmd)
 	default:
-		return errors.New("invalid command, use GET, SET or DELETE")
+		err = errors.New("invalid command, use GET, SET or DELETE")
 	}
+
+	return value, err
 }
 
-func getCommand(cmd Command) (string error) {
+func getCommand(cmd Command) (string, error) {
 	val, exists := dataStore[cmd.key]
+	fmt.Println("cmd.key", cmd.key)
+	fmt.Printf("Val:%s, Exists:%t\n", val, exists)
 	if exists {
+		return val, nil
+	}else {
 		return val, errors.New("key does not exist in database")
 	}
-	return val, nil
 }
 
-func setCommand(cmd Command) error {
+func setCommand(cmd Command) (string, error) {
 	dataStore[cmd.key] = cmd.value
-	return nil
+	return "OK", nil
 }
 
-func deleteCommand() {
-
+func updateCommand(cmd Command) (string, error) {
+	return "OK", nil
 }
 
-//Need to parse the string input to understand what to do
-//based on the parsed string, run an action
+func deleteCommand(cmd Command) (string, error) {
+	delete(dataStore, cmd.key)
+	return "OK", nil
+}
+
