@@ -26,7 +26,8 @@ Connections: telnet localhost 3333
 
  - Keys cannot have spaces in them
  - Value's can have spaces in them
- - if key does not exist in GET UPDATE or DELETE, then return nil to client
+ - if key does not exist in GET UPDATE or DELETE, then return ERR <Error message> to client
+ - If command is exececuted without issue then OK is returned to client
  
 example inputs
 GET 01 - return "Aden"

@@ -5,13 +5,8 @@ import (
 	"errors"
 	"fmt"
 	"net"
+	"os"
 	"strings"
-)
-
-const (
-	connHost = "localhost"
-	connPort = "3333"
-	connType = "tcp"
 )
 
 type Command struct {
@@ -23,27 +18,30 @@ type Command struct {
 var dataStore = make(map[string]string)
 
 func main() {
-	//Listen for connections
-	dStream, err := net.Listen(connType, connHost+":"+connPort)
+	const (
+		connHost = "localhost"
+		connPort = "3333"
+		connType = "tcp"
+	)
+
+	server, err := net.Listen(connType, connHost+":"+connPort)
 	if err != nil {
-		fmt.Println(err)
-		//TODO send error information back to client
-		return
+		fmt.Println("Error listening:", err)
+		os.Exit(1)
 	}
 	fmt.Println("Database server running on " + connHost + ":" + connPort)
-	defer dStream.Close()
+	defer server.Close()
 
-	//Accepts connection requests
 	for {
-		conn, err := dStream.Accept()
-		fmt.Println("User connected")
+		connection, err := server.Accept()
 		if err != nil {
-			fmt.Println(err)
+			fmt.Println("Error connecting:", err)
 			//TODO send error information back to client
 			return
 		}
+		fmt.Println("Client connected")
 
-		go handleConnection(conn)
+		go handleConnection(connection)
 	}
 }
 
@@ -57,7 +55,6 @@ func handleConnection(conn net.Conn) {
 			return
 		}
 
-		
 		parsedCommand, err := parseCommand(data)
 		if err != nil {
 			fmt.Println(err)
@@ -132,7 +129,7 @@ func getCommand(cmd Command) (string, error) {
 	fmt.Printf("Val:%s, Exists:%t\n", val, exists)
 	if exists {
 		return val, nil
-	}else {
+	} else {
 		return val, errors.New("key does not exist in database")
 	}
 }
@@ -150,4 +147,3 @@ func deleteCommand(cmd Command) (string, error) {
 	delete(dataStore, cmd.key)
 	return "OK", nil
 }
-
