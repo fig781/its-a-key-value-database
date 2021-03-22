@@ -34,3 +34,8 @@ GET 01 - return "Aden"
 GET user1 - return "Aden Eilers"
 
 Set user1 Aden
+
+TODO
+1. make sure only valid commands make it to the handleCommand function
+2. Build functionality for the four commands and make them work
+3. build functionalit to send information back to the client

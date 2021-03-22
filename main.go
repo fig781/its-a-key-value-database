@@ -72,7 +72,6 @@ func handleConnection(conn net.Conn) {
 		fmt.Println("Datastore:", dataStore)
 
 	}
-	//conn.Close()
 }
 
 func parseCommand(rawData string) (Command, error) {
@@ -124,8 +123,9 @@ func handleCommand(cmd Command) (value string, err error) {
 }
 
 func getCommand(cmd Command) (string, error) {
+	//cmd.key is problem works fine when it is a hard coded string value
 	val, exists := dataStore[cmd.key]
-	fmt.Println("cmd.key", cmd.key)
+	fmt.Printf("cmd.key type: %T \n", cmd.key)
 	fmt.Printf("Val:%s, Exists:%t\n", val, exists)
 	if exists {
 		return val, nil
