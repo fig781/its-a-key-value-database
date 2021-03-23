@@ -67,12 +67,28 @@ func handleConnection(conn net.Conn) {
 		value, err := handleCommand(parsedCommand)
 		if err != nil {
 			fmt.Println(err)
+			sendResponse(conn, err)
 			//TODO send error information to the client
 		}
-		fmt.Println("Value:", value)
 		fmt.Println("Datastore:", dataStore)
 
+		
+
+
 	}
+}
+
+func sendResponse(conn net.Conn, res string) {
+	conn.Write([]byte(res))
+}
+
+func constructResponse(value string, err error) string {
+	res := ""
+	if err == nil {
+		
+	}
+
+	return res
 }
 
 func parseCommand(rawData string) (Command, error) {
@@ -117,7 +133,7 @@ func handleCommand(cmd Command) (value string, err error) {
 	case "DELETE":
 		value, err = deleteCommand(cmd)
 	default:
-		err = errors.New("invalid command, use GET, SET or DELETE")
+		err = errors.New("invalid command, use GET, SET, UPDATE or DELETE")
 	}
 
 	return value, err
@@ -156,10 +172,10 @@ func updateCommand(cmd Command) (string, error) {
 
 func deleteCommand(cmd Command) (string, error) {
 	_, exists := dataStore[cmd.key]
-	if !exists {
-		return "ERR", errors.New("key does not exist, so it cannot be deleted")
-	} else {
+	if exists {
 		delete(dataStore, cmd.key)
 		return "OK", nil
+	} else {
+		return "ERR", errors.New("key does not exist, so it cannot be deleted")
 	}
 }
