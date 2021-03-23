@@ -54,13 +54,14 @@ func handleConnection(conn net.Conn) {
 			//TODO send error information back to client
 			return
 		}
+		data = strings.TrimSuffix(data, "\r\n")
 
 		parsedCommand, err := parseCommand(data)
 		if err != nil {
 			fmt.Println(err)
 			//TODO send error information back to client
 		}
-		fmt.Printf("verb: %s, key: %s, value: %s\n", parsedCommand.verb, parsedCommand.key, parsedCommand.value)
+		fmt.Printf("Verb: %s, Key: %s, Value: %s\n", parsedCommand.verb, parsedCommand.key, parsedCommand.value)
 		//Every input past this should be valid, if an input is not valid it should throw an error.
 
 		value, err := handleCommand(parsedCommand)
@@ -123,27 +124,42 @@ func handleCommand(cmd Command) (value string, err error) {
 }
 
 func getCommand(cmd Command) (string, error) {
-	//cmd.key is problem works fine when it is a hard coded string value
 	val, exists := dataStore[cmd.key]
-	fmt.Printf("cmd.key type: %T \n", cmd.key)
-	fmt.Printf("Val:%s, Exists:%t\n", val, exists)
 	if exists {
 		return val, nil
 	} else {
-		return val, errors.New("key does not exist in database")
+		return "ERR", errors.New("key does not exist in database")
 	}
 }
 
 func setCommand(cmd Command) (string, error) {
-	dataStore[cmd.key] = cmd.value
-	return "OK", nil
+	_, exists := dataStore[cmd.key]
+	if !exists {
+		dataStore[cmd.key] = cmd.value
+		return "OK", nil
+	} else {
+		return "ERR", errors.New("key already exists in database")
+	}
+
 }
 
 func updateCommand(cmd Command) (string, error) {
-	return "OK", nil
+	_, exists := dataStore[cmd.key]
+	if exists {
+		dataStore[cmd.key] = cmd.value
+		return "OK", nil
+	} else {
+		return "ERR", errors.New("key does not exist in database")
+	}
+
 }
 
 func deleteCommand(cmd Command) (string, error) {
-	delete(dataStore, cmd.key)
-	return "OK", nil
+	_, exists := dataStore[cmd.key]
+	if !exists {
+		return "ERR", errors.New("key does not exist, so it cannot be deleted")
+	} else {
+		delete(dataStore, cmd.key)
+		return "OK", nil
+	}
 }
