@@ -51,7 +51,7 @@ func handleConnection(conn net.Conn) {
 		data, err := bufio.NewReader(conn).ReadString('\n')
 		if err != nil {
 			fmt.Println(err)
-			//TODO send error information back to client
+			sendResponse(conn, "", err)
 			return
 		}
 		data = strings.TrimSuffix(data, "\r\n")
@@ -59,36 +59,33 @@ func handleConnection(conn net.Conn) {
 		parsedCommand, err := parseCommand(data)
 		if err != nil {
 			fmt.Println(err)
-			//TODO send error information back to client
+			sendResponse(conn, parsedCommand.key, err)
+		} else {
+			fmt.Printf("Verb: %s, Key: %s, Value: %s\n", parsedCommand.verb, parsedCommand.key, parsedCommand.value)
+			//Every input past this should be valid, if an input is not valid it should throw an error.
+
+			value, err := handleCommand(parsedCommand)
+			if err != nil {
+				fmt.Println(err)
+				sendResponse(conn, value, err)
+			} else {
+				sendResponse(conn, value, err)
+			}
+			fmt.Println("Datastore:", dataStore)
 		}
-		fmt.Printf("Verb: %s, Key: %s, Value: %s\n", parsedCommand.verb, parsedCommand.key, parsedCommand.value)
-		//Every input past this should be valid, if an input is not valid it should throw an error.
-
-		value, err := handleCommand(parsedCommand)
-		if err != nil {
-			fmt.Println(err)
-			sendResponse(conn, err)
-			//TODO send error information to the client
-		}
-		fmt.Println("Datastore:", dataStore)
-
-		
-
-
 	}
 }
 
-func sendResponse(conn net.Conn, res string) {
-	conn.Write([]byte(res))
+func sendResponse(conn net.Conn, res string, err error) {
+	conn.Write([]byte(constructResponse(res, err)))
 }
 
 func constructResponse(value string, err error) string {
-	res := ""
 	if err == nil {
-		
+		return value
+	} else {
+		return value + " " + err.Error()
 	}
-
-	return res
 }
 
 func parseCommand(rawData string) (Command, error) {
@@ -114,7 +111,11 @@ func parseCommand(rawData string) (Command, error) {
 			value: tmpStr,
 		}, nil
 	} else {
-		return Command{}, errors.New("invalid command format")
+		return Command{
+			verb:  "ERR",
+			key:   "",
+			value: "",
+		}, errors.New("invalid command format, needs to be <verb> <key> <value>")
 	}
 }
 
@@ -156,7 +157,6 @@ func setCommand(cmd Command) (string, error) {
 	} else {
 		return "ERR", errors.New("key already exists in database")
 	}
-
 }
 
 func updateCommand(cmd Command) (string, error) {
@@ -167,7 +167,6 @@ func updateCommand(cmd Command) (string, error) {
 	} else {
 		return "ERR", errors.New("key does not exist in database")
 	}
-
 }
 
 func deleteCommand(cmd Command) (string, error) {
@@ -176,6 +175,6 @@ func deleteCommand(cmd Command) (string, error) {
 		delete(dataStore, cmd.key)
 		return "OK", nil
 	} else {
-		return "ERR", errors.New("key does not exist, so it cannot be deleted")
+		return "ERR", errors.New("key does not exist")
 	}
 }
