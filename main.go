@@ -20,7 +20,7 @@ var dataStore = make(map[string]string)
 func main() {
 	const (
 		connHost = "localhost"
-		connPort = "3333"
+		connPort = "3332"
 		connType = "tcp"
 	)
 
@@ -36,7 +36,6 @@ func main() {
 		connection, err := server.Accept()
 		if err != nil {
 			fmt.Println("Error connecting:", err)
-			//TODO send error information back to client
 			return
 		}
 		fmt.Println("Client connected")
@@ -45,7 +44,6 @@ func main() {
 	}
 }
 
-//Handles data that streams in from TCP server connection
 func handleConnection(conn net.Conn) {
 	for {
 		data, err := bufio.NewReader(conn).ReadString('\n')
@@ -145,7 +143,7 @@ func getCommand(cmd Command) (string, error) {
 	if exists {
 		return val, nil
 	} else {
-		return "ERR", errors.New("key does not exist in database")
+		return "ERR", errors.New("key does not exists")
 	}
 }
 
@@ -155,7 +153,7 @@ func setCommand(cmd Command) (string, error) {
 		dataStore[cmd.key] = cmd.value
 		return "OK", nil
 	} else {
-		return "ERR", errors.New("key already exists in database")
+		return "ERR", errors.New("key already exists")
 	}
 }
 
@@ -165,7 +163,7 @@ func updateCommand(cmd Command) (string, error) {
 		dataStore[cmd.key] = cmd.value
 		return "OK", nil
 	} else {
-		return "ERR", errors.New("key does not exist in database")
+		return "ERR", errors.New("key does not exist")
 	}
 }
 

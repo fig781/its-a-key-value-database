@@ -10,6 +10,7 @@ The accepted commands:
 * DELETE key
 
 ## Example inputs and outputs:
+
 #### GET
 ```
 > GET user1
