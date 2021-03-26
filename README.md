@@ -10,20 +10,19 @@ The accepted commands:
 * DELETE key
 
 ## Example inputs and outputs:
-
-#### GET
-```
-> GET user1
-> value
-> GET user2
-> ERR key does not exist
-```
 #### SET
 ```
 > SET user1 Aden
 > OK
 > SET user1 Eilers
 > ERR key already exists
+```
+#### GET
+```
+> GET user1
+> Aden
+> GET user2
+> ERR key does not exist
 ```
 #### UPDATE
 ```

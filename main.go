@@ -52,9 +52,10 @@ func handleConnection(conn net.Conn) {
 			sendResponse(conn, "", err)
 			return
 		}
-		data = strings.TrimSuffix(data, "\r\n")
 
-		parsedCommand, err := parseCommand(data)
+		normalizedData := normaliseData(data)
+
+		parsedCommand, err := parseCommand(normalizedData)
 		if err != nil {
 			fmt.Println(err)
 			sendResponse(conn, parsedCommand.key, err)
@@ -84,6 +85,20 @@ func constructResponse(value string, err error) string {
 	} else {
 		return value + " " + err.Error()
 	}
+}
+
+func normaliseData(data string) string {
+	newStr := ""
+	for _, c := range data {
+		if c == 8 {
+			//remove backspace, and try to remove the char the backspace was trying to remove
+		}
+	}
+	fmt.Println(newStr)
+
+	newStr = strings.TrimSuffix(newStr, "\r\n")
+
+	return newStr
 }
 
 func parseCommand(rawData string) (Command, error) {
