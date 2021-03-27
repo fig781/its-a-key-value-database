@@ -88,17 +88,22 @@ func constructResponse(value string, err error) string {
 }
 
 func normaliseData(data string) string {
-	newStr := ""
+	var runeSlice []rune
 	for _, c := range data {
-		if c == 8 {
-			//remove backspace, and try to remove the char the backspace was trying to remove
+		//ignors all ASCII from 0-31
+		if c <= 31 || c == 127 {
+			//Remove backspace char
+			if len(runeSlice) != 0 && c == 8 {
+				runeSlice = runeSlice[:len(runeSlice)-1]
+			}
+		} else {
+			runeSlice = append(runeSlice, c)
 		}
 	}
-	fmt.Println(newStr)
 
-	newStr = strings.TrimSuffix(newStr, "\r\n")
-
-	return newStr
+	returnStr := string(runeSlice)
+	returnStr = strings.TrimSuffix(returnStr, "\r\n")
+	return returnStr
 }
 
 func parseCommand(rawData string) (Command, error) {
