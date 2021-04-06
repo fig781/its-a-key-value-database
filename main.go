@@ -109,7 +109,13 @@ func normaliseData(data string) string {
 func parseCommand(rawData string) (Command, error) {
 	parsedData := strings.Split(rawData, " ")
 
-	if len(parsedData) == 2 {
+	if len(parsedData) == 1 {
+		return Command{
+			verb: parsedData[0],
+			key: "",
+			value: "",
+		}, nil
+	} else if len(parsedData) == 2 {
 		return Command{
 			verb:  parsedData[0],
 			key:   parsedData[1],
@@ -151,6 +157,8 @@ func handleCommand(cmd Command) (value string, err error) {
 		value, err = updateCommand(cmd)
 	case "DELETE":
 		value, err = deleteCommand(cmd)
+	case "GETALL":
+		value, err = getAllCommand(cmd)
 	default:
 		err = errors.New("invalid command, use GET, SET, UPDATE or DELETE")
 	}
@@ -161,9 +169,11 @@ func handleCommand(cmd Command) (value string, err error) {
 func getCommand(cmd Command) (string, error) {
 	val, exists := dataStore[cmd.key]
 	if exists {
-		return val, nil
+		//"+Aden\r\n"
+		formatedReturnVal := "+" + val + "\r\n"
+		return formatedReturnVal, nil
 	} else {
-		return "ERR", errors.New("key does not exists")
+		return "-ERR", errors.New("key does not exists\r\n")
 	}
 }
 
@@ -171,9 +181,9 @@ func setCommand(cmd Command) (string, error) {
 	_, exists := dataStore[cmd.key]
 	if !exists {
 		dataStore[cmd.key] = cmd.value
-		return "OK", nil
+		return "+OK\r\n", nil
 	} else {
-		return "ERR", errors.New("key already exists")
+		return "-ERR", errors.New("key already exists\r\n")
 	}
 }
 
@@ -181,9 +191,9 @@ func updateCommand(cmd Command) (string, error) {
 	_, exists := dataStore[cmd.key]
 	if exists {
 		dataStore[cmd.key] = cmd.value
-		return "OK", nil
+		return "+OK\r\n", nil
 	} else {
-		return "ERR", errors.New("key does not exist")
+		return "-ERR", errors.New("key does not exist\r\n")
 	}
 }
 
@@ -191,8 +201,22 @@ func deleteCommand(cmd Command) (string, error) {
 	_, exists := dataStore[cmd.key]
 	if exists {
 		delete(dataStore, cmd.key)
-		return "OK", nil
+		return "+OK\r\n", nil
 	} else {
-		return "ERR", errors.New("key does not exist")
+		return "-ERR", errors.New("key does not exist\r\n")
+	}
+}
+
+func getAllCommand(cmd Command) (string, error) {
+	if len(dataStore) != 0 {
+		// "+0\r\n"
+		allValues := "+" + fmt.Sprint(len(dataStore) * 2) + "\r\n"
+		// "+4\r\nuser1\r\nAden\r\nuser2\r\nEilers\r\n"
+		for key, value := range dataStore {
+			allValues += key + "\r\n" + value + "\r\n"
+		}
+		return allValues, nil
+	} else {
+		return "-ERR", errors.New("no entries in database\r\n")
 	}
 }

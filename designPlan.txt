@@ -12,7 +12,7 @@
 2. set up server to handle different information sent to it
 3. handle data in a Map 
 
-Connections: telnet localhost 3333
+Connections: telnet localhost 3332
 
  - Keys cannot have spaces in them
  - Value's can have spaces in them
