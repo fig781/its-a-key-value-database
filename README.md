@@ -4,37 +4,84 @@ The program works by creating a tcp server on localhost:3332 that can then be co
 Commands are entered in the format **verb key value**
 
 The accepted commands:
-* GET key
 * SET key value
+* GET key
+* GETALL
 * UPDATE key value
 * DELETE key
+* LEN
+* GETVALUES
+* GETKEYS
+* EXISTS key
 
 ## Example inputs and outputs:
 #### SET
 ```
 > SET user1 Aden
-> OK
+> +OK
 > SET user1 Eilers
-> ERR key already exists
+> -ERR key already exists
 ```
 #### GET
 ```
 > GET user1
-> Aden
+> +Aden
 > GET user2
-> ERR key does not exist
+> -ERR key does not exist
+```
+#### GETALL
+```
+> GETALL
+> +user1
+> Aden
+> user2
+> Mike
+> GETALL
+> -ERR no entries in database
 ```
 #### UPDATE
 ```
 > UPDATE user1
-> OK
+> +OK
 > UPDATE user2
-> ERR key does not exist
+> -ERR key does not exist
 ```
 #### DELETE
 ```
 > DELETE user1
-> OK
+> +OK
 > DELETE user2
-> ERR key does not exist
+> -ERR key does not exist
+```
+#### LEN
+```
+> LEN
+> +5
+> LEN
+> +0
+```
+#### GETVALUES
+```
+> GETVALUES
+> +Aden
+> Eilers
+> Mike
+> GETVALUES
+> -ERR no entries in database
+```
+#### GETKEYS
+```
+> GETKEYS
+> +user1
+> user2
+> user3
+> GETKEYS
+> -ERR no entries in database
+```
+#### EXISTS
+```
+> EXISTS user1
+> +1
+> EXISTS user2
+> +0
 ```

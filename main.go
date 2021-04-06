@@ -111,8 +111,8 @@ func parseCommand(rawData string) (Command, error) {
 
 	if len(parsedData) == 1 {
 		return Command{
-			verb: parsedData[0],
-			key: "",
+			verb:  parsedData[0],
+			key:   "",
 			value: "",
 		}, nil
 	} else if len(parsedData) == 2 {
@@ -159,6 +159,14 @@ func handleCommand(cmd Command) (value string, err error) {
 		value, err = deleteCommand(cmd)
 	case "GETALL":
 		value, err = getAllCommand(cmd)
+	case "LEN":
+		value, err = lenCommand(cmd)
+	case "GETKEYS":
+		value, err = getKeysCommand(cmd)
+	case "GETVALUES":
+		value, err = getValuesCommand(cmd)
+	case "EXISTS":
+		value, err = existsCommand(cmd)
 	default:
 		err = errors.New("invalid command, use GET, SET, UPDATE or DELETE")
 	}
@@ -209,14 +217,52 @@ func deleteCommand(cmd Command) (string, error) {
 
 func getAllCommand(cmd Command) (string, error) {
 	if len(dataStore) != 0 {
-		// "+0\r\n"
-		allValues := "+" + fmt.Sprint(len(dataStore) * 2) + "\r\n"
-		// "+4\r\nuser1\r\nAden\r\nuser2\r\nEilers\r\n"
+		allEntries := "+"
+		// "+user1\r\nAden\r\nuser2\r\nEilers\r\n"
 		for key, value := range dataStore {
-			allValues += key + "\r\n" + value + "\r\n"
+			allEntries += key + "\r\n" + value + "\r\n"
+		}
+		return allEntries, nil
+	} else {
+		return "-ERR", errors.New("no entries in database\r\n")
+	}
+}
+
+func lenCommand(cmd Command) (string, error) {
+	return fmt.Sprint(len(dataStore)), nil
+}
+
+func getValuesCommand(cmd Command) (string, error) {
+	if len(dataStore) != 0 {
+		allValues := "+"
+		// "+Aden\r\nEilers\r\n"
+		for _, value := range dataStore {
+			allValues += value + "\r\n"
 		}
 		return allValues, nil
 	} else {
 		return "-ERR", errors.New("no entries in database\r\n")
+	}
+}
+
+func getKeysCommand(cmd Command) (string, error) {
+	if len(dataStore) != 0 {
+		allKeys := "+"
+		// "+user1\r\nuser2\r\n"
+		for key := range dataStore {
+			allKeys += key + "\r\n"
+		}
+		return allKeys, nil
+	} else {
+		return "-ERR", errors.New("no entries in database\r\n")
+	}
+}
+
+func existsCommand(cmd Command) (string, error) {
+	_, exists := dataStore[cmd.key]
+	if exists {
+		return "+1\r\n", nil
+	} else {
+		return "+0\r\n", nil
 	}
 }
