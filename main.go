@@ -225,7 +225,7 @@ func getAllCommand(cmd Command) (string, error) {
 }
 
 func lenCommand(cmd Command) (string, error) {
-	return fmt.Sprint(len(dataStore)), nil
+	return "+" + fmt.Sprint(len(dataStore)) + "\r\n", nil
 }
 
 func getValuesCommand(cmd Command) (string, error) {
