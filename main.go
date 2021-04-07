@@ -66,10 +66,9 @@ func handleConnection(conn net.Conn) {
 			value, err := handleCommand(parsedCommand)
 			if err != nil {
 				fmt.Println(err)
-				sendResponse(conn, value, err)
-			} else {
-				sendResponse(conn, value, err)
 			}
+			sendResponse(conn, value, err)
+
 			fmt.Println("Datastore:", dataStore)
 		}
 	}
@@ -121,7 +120,7 @@ func parseCommand(rawData string) (Command, error) {
 			key:   parsedData[1],
 			value: "",
 		}, nil
-	} else if len(parsedData) > 2 {
+	} else {
 
 		tmpSlice := []string{}
 		for x := 2; x < len(parsedData); x++ {
@@ -134,12 +133,6 @@ func parseCommand(rawData string) (Command, error) {
 			key:   parsedData[1],
 			value: tmpStr,
 		}, nil
-	} else {
-		return Command{
-			verb:  "ERR",
-			key:   "",
-			value: "",
-		}, errors.New("invalid command format, needs to be <verb> <key> <value>")
 	}
 }
 
@@ -167,8 +160,11 @@ func handleCommand(cmd Command) (value string, err error) {
 		value, err = getValuesCommand(cmd)
 	case "EXISTS":
 		value, err = existsCommand(cmd)
+	case "PING":
+		value = pingCommand(cmd)
 	default:
-		err = errors.New("invalid command, use GET, SET, UPDATE or DELETE")
+		value = "-ERR"
+		err = errors.New("invalid command")
 	}
 
 	return value, err
@@ -265,4 +261,8 @@ func existsCommand(cmd Command) (string, error) {
 	} else {
 		return "+0\r\n", nil
 	}
+}
+
+func pingCommand(cmd Command) string {
+	return "+PONG"
 }
